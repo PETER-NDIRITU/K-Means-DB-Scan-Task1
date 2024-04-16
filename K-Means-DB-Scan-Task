@@ -1,0 +1,57 @@
+# Load the necessary libraries
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.cluster import KMeans, DBSCAN
+from sklearn.preprocessing import StandardScaler
+
+# Read the POI data from the CSV file into a Pandas DataFrame
+poi_data = pd.read_csv('/content/Shops Data.csv')
+
+# Display the first few rows of the DataFrame to inspect the data
+print(poi_data.head())
+
+# Preprocess the data if needed (e.g., scaling)
+scaler = StandardScaler()
+scaled_data = scaler.fit_transform(poi_data[['lat', 'lon']])
+
+# Experiment with different values of k for k-Means
+# Here we can modify  this list with the values you want to experiment with
+k_values = [3, 5, 8]
+
+plt.figure(figsize=(15, 5))
+
+for i, k in enumerate(k_values):
+    # Implement k-Means clustering
+    kmeans = KMeans(n_clusters=k, random_state=42)
+    poi_data[f'kmeans_cluster_{k}'] = kmeans.fit_predict(scaled_data)
+
+    # Visualize k-Means results
+    plt.subplot(1, len(k_values), i + 1)
+    plt.scatter(poi_data['lon'], poi_data['lat'], c=poi_data[f'kmeans_cluster_{k}'], cmap='viridis', marker='.')
+    plt.title(f'k-Means (k={k})')
+
+plt.show()
+
+
+# Experiment with different values of eps and min_samples for DBSCAN
+# Here we can modify  this list with the values you want to experiment with
+eps_values = [0.1, 0.5, 1.0]
+# Here we can modify this list with the values you want to experiment with
+min_samples_values = [5, 10, 20]
+
+plt.figure(figsize=(15, 10))
+
+for i, eps in enumerate(eps_values):
+    for j, min_samples in enumerate(min_samples_values):
+        # Implement DBSCAN clustering
+        dbscan = DBSCAN(eps=eps, min_samples=min_samples)
+        poi_data[f'dbscan_cluster_{eps}_{min_samples}'] = dbscan.fit_predict(scaled_data)
+
+        # Visualize DBSCAN results
+        plt.subplot(len(eps_values), len(min_samples_values), i * len(min_samples_values) + j + 1)
+        plt.scatter(poi_data['lon'], poi_data['lat'], c=poi_data[f'dbscan_cluster_{eps}_{min_samples}'],
+                    cmap='viridis', marker='.')
+        plt.title(f'DBSCAN (eps={eps}, min_samples={min_samples})')
+
+plt.show()
